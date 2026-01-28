@@ -1,0 +1,13 @@
+bind-dynamic
+bogus-priv
+cache-size=64
+clear-on-reload
+domain-needed
+group=dnsmasq
+max-cache-ttl=60
+max-ttl=15
+min-cache-ttl=5
+no-dhcp-interface=
+no-hosts
+no-negcache
+user=dnsmasq
