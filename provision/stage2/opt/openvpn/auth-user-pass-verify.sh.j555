@@ -1,0 +1,81 @@
+#!/bin/bash
+
+RADIUS_CALLER_STATION_ID=$untrusted_ip
+RADIUS_USER_NAME=$(sed -n '1p' $1)
+RADIUS_USER_PASSWORD=$(sed -n '2p' $1)
+RADIUS_SECRET={{ password }}
+
+RADCLIENT_OUTPUT=$(echo "User-Name=$RADIUS_USER_NAME,User-Password=$RADIUS_USER_PASSWORD,Calling-Station-Id=$RADIUS_CALLER_STATION_ID" | radclient -x 127.0.0.1 auth $RADIUS_SECRET)
+RADCLIENT_EXITCODE=$?
+
+if [[ $RADCLIENT_EXITCODE -ne 0 ]]
+then
+    exit 1
+fi
+
+PARSER_STATE="A"
+PARSER_PATTERN_REQUEST="^Sent Access-Request Id [0-9]+ from [0-9\.\:]+ to [0-9\.\:]+ length [0-9]+$"
+PARSER_PATTERN_RESPONSE="^Received Access-Accept Id [0-9]+ from [0-9\.\:]+ to [0-9\.\:]+ length [0-9]+$"
+PARSER_PATTERN_DNS_SERVER_1="^\s+MS-Primary-DNS-Server = ([0-9\.]+)$"
+PARSER_PATTERN_DNS_SERVER_2="^\s+MS-Secondary-DNS-Server = ([0-9\.]+)$"
+PARSER_PATTERN_IP_ADDRESS="^\s+Framed-IP-Address = ([0-9\.]+)$"
+PARSER_PATTERN_IP_NETMASK="^\s+Framed-IP-Netmask = ([0-9\.]+)$"
+DNS_SERVER_1=""
+DNS_SERVER_2=""
+IP_ADDRESS="169.254.254.169"
+IP_NETMASK="255.255.255.0"
+
+while IFS= read -r RADCLIENT_OUTPUT_LINE; do
+    case $PARSER_STATE in
+    A)
+        if [[ $RADCLIENT_OUTPUT_LINE =~ $PARSER_PATTERN_REQUEST ]]
+        then
+            PARSER_STATE="B"
+        fi
+    ;;
+    B)
+        if [[ $RADCLIENT_OUTPUT_LINE =~ $PARSER_PATTERN_RESPONSE ]]
+        then
+            PARSER_STATE="C"
+        fi
+    ;;
+    C)
+        if [[ $RADCLIENT_OUTPUT_LINE =~ $PARSER_PATTERN_IP_ADDRESS ]]
+        then
+            IP_ADDRESS="${BASH_REMATCH[1]}"
+        elif [[ $RADCLIENT_OUTPUT_LINE =~ $PARSER_PATTERN_IP_NETMASK ]]
+        then
+            IP_NETMASK="${BASH_REMATCH[1]}"
+        elif [[ $RADCLIENT_OUTPUT_LINE =~ $PARSER_PATTERN_DNS_SERVER_1 ]]
+        then
+            DNS_SERVER_1="${BASH_REMATCH[1]}"
+        elif [[ $RADCLIENT_OUTPUT_LINE =~ $PARSER_PATTERN_DNS_SERVER_2 ]]
+        then
+            DNS_SERVER_2="${BASH_REMATCH[1]}"
+        fi
+    ;;
+    esac
+done <<< "$RADCLIENT_OUTPUT"
+
+echo "RADIUS_USER_NAME         = $RADIUS_USER_NAME"
+echo "RADIUS_CALLER_STATION_ID = $RADIUS_CALLER_STATION_ID"
+echo "IP_ADDRESS               = $IP_ADDRESS"
+echo "IP_NETMASK               = $IP_NETMASK"
+echo "DNS_SERVER_1             = $DNS_SERVER_1"
+echo "DNS_SERVER_2             = $DNS_SERVER_2"
+
+CLIENT_CONFIG_PATH="/etc/openvpn/server/client-config/$RADIUS_USER_NAME"
+
+echo '' > $CLIENT_CONFIG_PATH
+
+if [[ -n $DNS_SERVER_1 ]]
+then
+    echo "push \"dhcp-option DNS $DNS_SERVER_1\"" >> $CLIENT_CONFIG_PATH
+fi
+
+if [[ -n $DNS_SERVER_2 ]]
+then
+    echo "push \"dhcp-option DNS $DNS_SERVER_2\"" >> $CLIENT_CONFIG_PATH
+fi
+
+echo "ifconfig-push $IP_ADDRESS 255.255.0.0" >> $CLIENT_CONFIG_PATH

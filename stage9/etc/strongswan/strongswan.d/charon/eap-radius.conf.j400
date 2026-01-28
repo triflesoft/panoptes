@@ -1,0 +1,15 @@
+eap-radius {
+    accounting = yes
+    accounting_interval = 20s
+    accounting_send_class = yes
+    authentication = yes
+    load = yes
+    station_id_with_port = no
+
+    servers {
+        localhost_freeradius{
+          address = 127.0.0.1
+          secret = {{ configuration.password }}
+        }
+    }
+}

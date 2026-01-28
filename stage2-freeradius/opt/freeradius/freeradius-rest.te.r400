@@ -1,0 +1,11 @@
+
+module freeradius-rest 1.0;
+
+require {
+        type http_cache_port_t;
+        type radiusd_t;
+        class tcp_socket name_connect;
+}
+
+#============= radiusd_t ==============
+allow radiusd_t http_cache_port_t:tcp_socket name_connect;

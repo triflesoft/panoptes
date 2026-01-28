@@ -1,0 +1,14 @@
+[Unit]
+Description=Panoptes
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/opt/panoptes/panoptes
+WorkingDirectory=/opt/panoptes/
+Restart=on-failure
+RestartSec=15s
+User=root
+
+[Install]
+WantedBy=multi-user.target

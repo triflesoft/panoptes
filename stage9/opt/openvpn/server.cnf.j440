@@ -1,0 +1,87 @@
+[ ca ]
+default_ca              = CA_default
+
+[ CA_default ]
+dir                     = ./
+certs                   = $dir
+crl_dir                 = $dir/crl
+database                = $dir/index.txt
+new_certs_dir           = $dir
+certificate             = $dir/server.pem
+serial                  = $dir/serial
+crl                     = $dir/crl.pem
+private_key             = $dir/server.key
+RANDFILE                = $dir/.rand
+name_opt                = ca_default
+cert_opt                = ca_default
+default_days            = 60
+default_crl_days        = 30
+default_md              = sha256
+preserve                = no
+policy                  = policy_match
+
+[ policy_match ]
+countryName             = match
+stateOrProvinceName     = match
+organizationName        = match
+organizationalUnitName  = optional
+commonName              = supplied
+emailAddress            = optional
+
+[ policy_anything ]
+countryName             = optional
+stateOrProvinceName     = optional
+localityName            = optional
+organizationName        = optional
+organizationalUnitName  = optional
+commonName              = supplied
+emailAddress            = optional
+
+[ req ]
+prompt                  = no
+distinguished_name      = server
+default_bits            = 2048
+input_password          = {{ configuration.password }}
+output_password         = {{ configuration.password }}
+req_extensions          = v3_req
+
+[server]
+countryName             = "{{ configuration.x509.certificate.country }}"
+stateOrProvinceName     = "{{ configuration.x509.certificate.state }}"
+localityName            = "{{ configuration.x509.certificate.locality }}"
+organizationName        = "{{ configuration.x509.certificate.organization }}"
+emailAddress            = "{{ configuration.x509.certificate.email }}"
+commonName              = "{{ configuration.network.external.domain_name }}"
+
+[ req ]
+prompt                  = no
+distinguished_name      = certificate_authority
+default_bits            = 2048
+input_password          = {{ configuration.password }}
+output_password         = {{ configuration.password }}
+x509_extensions         = v3_ca
+
+[certificate_authority]
+countryName             = "{{ configuration.x509.certificate.country }}"
+stateOrProvinceName     = "{{ configuration.x509.certificate.state }}"
+localityName            = "{{ configuration.x509.certificate.locality }}"
+organizationName        = "{{ configuration.x509.certificate.organization }}"
+emailAddress            = "{{ configuration.x509.certificate.email }}"
+commonName              = "{{ configuration.x509.certificate.organization }} Certificate Authority"
+
+[v3_ca]
+subjectKeyIdentifier    = hash
+authorityKeyIdentifier  = keyid:always,issuer:always
+basicConstraints        = critical,CA:false
+crlDistributionPoints   = URI:http://www.example.org/example_ca.crl
+
+[ v3_req ]
+basicConstraints = CA:FALSE
+keyUsage = nonRepudiation, digitalSignature, keyEncipherment
+extendedKeyUsage = serverAuth
+subjectAltName = @alt_names
+[alt_names]
+DNS.1 = {{ configuration.network.external.domain_name }}
+
+# NAIRealm from RFC 7585
+otherName.0 = 1.3.6.1.5.5.7.8.8;FORMAT:UTF8,UTF8:*.{{ configuration.network.external.domain_name }}

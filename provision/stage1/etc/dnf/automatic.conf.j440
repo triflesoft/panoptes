@@ -1,0 +1,9 @@
+[commands]
+upgrade_type = security
+random_sleep = 0
+download_updates = yes
+apply_updates = yes
+
+[emitters]
+system_name = {{ configuration.network.external.domain_name }}
+emit_via = stdio

@@ -1,0 +1,102 @@
+# MOZILLA - https://infosec.mozilla.org/guidelines/openssh#modern-openssh-67
+
+AcceptEnv                        LANG LANGUAGE LC_ADDRESS LC_ALL LC_COLLATE LC_CTYPE LC_IDENTIFICATION LC_MEASUREMENT LC_MESSAGES LC_MONETARY LC_NAME LC_NUMERIC LC_PAPER LC_TELEPHONE LC_TIME XMODIFIERS
+AddressFamily                    inet
+# DEFAULT AllowAgentForwarding             yes
+# DEFAULT AllowGroups
+# DEFAULT AllowStreamLocalForwarding       yes
+# DEFAULT AllowTcpForwarding               yes
+# DEFAULT AllowUsers
+AuthenticationMethods            publickey
+# DEFAULT AuthorizedKeysCommand
+# DEFAULT AuthorizedKeysCommandUser
+AuthorizedKeysFile               .ssh/authorized_keys
+# DEFAULT AuthorizedPrincipalsCommand
+# DEFAULT AuthorizedPrincipalsCommandUser
+# DEFAULT AuthorizedPrincipalsFile
+Banner                           /etc/ssh/banner
+# DEFAULT CASignatureAlgorithms
+# DEFAULT ChrootDirectory
+Ciphers                          chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr # MOZILLA
+ClientAliveCountMax              3
+ClientAliveInterval             60
+Compression                      no
+# DEFAULT DenyGroups
+# DEFAULT DenyUsers
+DisableForwarding                no
+# DEFAULT ExposeAuthInfo         no
+# DEFAULT FingerprintHash        sha256
+GatewayPorts                     clientspecified
+# DEFAULT GSSAPIAuthentication             no
+# DEFAULT GSSAPICleanupCredentials
+# DEFAULT GSSAPIEnablek5users
+# DEFAULT GSSAPIKeyExchange
+# DEFAULT GSSAPIStrictAcceptorCheck
+# DEFAULT GSSAPIStoreCredentialsOnRekey
+# DEFAULT GSSAPIKexAlgorithms
+# DEFAULT HostbasedAcceptedAlgorithms
+# DEFAULT HostbasedAuthentication
+# DEFAULT HostCertificate
+HostKey                          /etc/ssh/ssh_host_ecdsa_key
+HostKey                          /etc/ssh/ssh_host_ed25519_key
+HostKey                          /etc/ssh/ssh_host_rsa_key
+# DEFAULT HostKeyAgent
+# DEFAULT HostKeyAlgorithms
+# DEFAULT IgnoreRhosts                     yes
+# DEFAULT IgnoreUserKnownHosts
+# DEFAULT Include
+# DEFAULT IPQoS
+KbdInteractiveAuthentication     no
+KerberosAuthentication           no
+# DEFAULT KerberosGetAFSToken
+# DEFAULT KerberosOrLocalPasswd
+# DEFAULT KerberosTicketCleanup
+# DEFAULT KerberosUniqueCCache
+# DEFAULT KerberosUseKuserok
+KexAlgorithms                    curve25519-sha256@libssh.org,ecdh-sha2-nistp521,ecdh-sha2-nistp384,ecdh-sha2-nistp256,diffie-hellman-group-exchange-sha256 # MOZILLA
+ListenAddress                    0.0.0.0
+LoginGraceTime                   60
+LogLevel                         ERROR
+MACs                             hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-512,hmac-sha2-256,umac-128@openssh.com # MOZILLA
+MaxAuthTries                     8
+MaxSessions                      8
+MaxStartups                      5:50:10
+# DEFAULT ModuliFile
+PasswordAuthentication           no
+PermitEmptyPasswords             no
+PermitRootLogin                  no
+# DEFAULT PermitTTY                        yes
+# DEFAULT PermitTunnel                     no
+# DEFAULT PermitUserEnvironment            no
+# DEFAULT PermitUserRC                     yes
+# DEFAULT PerSourceMaxStartups
+# DEFAULT PerSourceNetBlockSize            32:128
+PidFile                          /var/run/sshd.pid
+Port                            22
+# DEFAULT PrintLastLog                     yes
+PrintMotd                        no
+# DEFAULT PubkeyAcceptedAlgorithms
+# DEFAULT PubkeyAuthOptions
+# DEFAULT PubkeyAuthentication             yes
+RekeyLimit                       100M 60m
+# DEFAULT RevokedKeys
+# DEFAULT RDomain
+# DEFAULT SecurityKeyProvider
+# DEFAULT SetEnv
+# DEFAULT StreamLocalBindMask
+# DEFAULT StreamLocalBindUnlink
+# DEFAULT StrictModes                      yes
+Subsystem                        sftp /usr/libexec/openssh/sftp-server -f AUTHPRIV -l INFO # MOZILLA
+# DEFAULT SyslogFacility                   AUTHPRIV
+# DEFAULT TCPKeepAlive                     yes
+# DEFAULT TrustedUserCAKeys
+# DEFAULT UseDNS                           no
+# DEFAULT UsePAM                           no
+# DEFAULT VersionAddendum
+# DEFAULT X11DisplayOffset
+# DEFAULT X11MaxDisplays
+# DEFAULT X11Forwarding
+# DEFAULT X11UseLocalhost
+# DEFAULT XAuthLocation
+
+Include /etc/ssh/sshd_config.d/*.conf

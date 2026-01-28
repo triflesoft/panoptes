@@ -1,0 +1,11 @@
+mschap {
+    use_mppe = yes
+    require_encryption = yes
+    require_strong = yes
+
+    pool {
+    }
+
+    passchange {
+    }
+}

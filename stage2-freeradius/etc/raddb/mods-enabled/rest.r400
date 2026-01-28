@@ -1,0 +1,32 @@
+rest {
+    tls {
+    }
+
+    connect_uri = "http://127.0.0.1:8080"
+    connect_timeout = 5.0
+
+    authorize {
+        uri = "${..connect_uri}/radius/authorize"
+        method = 'post'
+        body = 'post'
+        tls = ${..tls}
+    }
+
+    accounting {
+        uri = "${..connect_uri}/radius/accounting"
+        method = 'post'
+        body = 'post'
+        tls = ${..tls}
+    }
+
+    pool {
+        start = 0
+        min = 0
+        max = ${thread[pool].max_servers}
+        spare = 0
+        uses = 0
+        retry_delay = 1
+        lifetime = 300
+        idle_timeout = 60
+    }
+}
