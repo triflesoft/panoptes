@@ -1,0 +1,57 @@
+server inner-tunnel {
+    listen {
+        ipaddr = 127.0.0.1
+        port = 18120
+        type = auth
+    }
+
+    authorize {
+        filter_username
+        mschap
+
+        update control {
+            &Proxy-To-Realm := LOCAL
+        }
+
+        eap {
+            ok = return
+        }
+
+        expiration
+        logintime
+        pap
+    }
+
+    authenticate {
+        Auth-Type PAP {
+                pap
+        }
+
+        Auth-Type MS-CHAP {
+            mschap
+        }
+
+        mschap
+        eap
+    }
+
+    session {
+    }
+
+    post-auth {
+        Post-Auth-Type REJECT {
+            attr_filter.access_reject
+
+            update outer.session-state {
+                &Module-Failure-Message := &request:Module-Failure-Message
+            }
+        }
+    }
+
+    pre-proxy {
+    }
+
+    post-proxy {
+        eap
+    }
+}

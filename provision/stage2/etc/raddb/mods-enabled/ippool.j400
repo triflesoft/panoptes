@@ -1,0 +1,15 @@
+{% for pool_name, pool in configuration.pools.items() -%}
+# rlm_ippool_tool -v /var/lib/radiusd/{{ pool_name }}.ippool /var/lib/radiusd/{{ pool_name }}.ipindex | sort
+ippool {{ pool_name }}_pool {
+    filename = ${db_dir}/{{ pool_name }}.ippool
+    range_start = {{ pool.ip_lower }}
+    range_stop = {{ pool.ip_upper }}
+    netmask = {{ pool.ip_netmask }}
+    cache_size = 64
+    ip_index = ${db_dir}/{{ pool_name }}.ipindex
+    override = yes
+    maximum_timeout = 86400
+    key = "%{User-Name}-%{Calling-Station-Id}"
+}
+
+{% endfor %}

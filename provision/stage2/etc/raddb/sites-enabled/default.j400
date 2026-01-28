@@ -1,0 +1,121 @@
+server default {
+    listen {
+        type = auth
+        ipaddr = *
+        port = 0
+
+        limit {
+            max_connections = 16
+            lifetime = 0
+            idle_timeout = 30
+        }
+    }
+
+    listen {
+        type = acct
+        ipaddr = *
+        port = 0
+
+        limit {
+            max_connections = 16
+            lifetime = 0
+            idle_timeout = 30
+        }
+    }
+
+    authorize {
+        filter_username
+        preprocess
+        rest
+        mschap
+
+        eap {
+            ok = return
+        }
+
+        expiration
+        logintime
+        pap
+    }
+
+    authenticate {
+        Auth-Type PAP {
+                pap
+        }
+
+        Auth-Type MS-CHAP {
+            mschap
+        }
+
+        mschap
+        eap
+    }
+
+    preacct {
+        preprocess
+        acct_unique
+    }
+
+    accounting {
+        detail
+        rest
+        attr_filter.accounting_response
+    }
+
+    session {
+    }
+
+    post-auth {
+        if (session-state:User-Name && reply:User-Name && request:User-Name && (reply:User-Name == request:User-Name)) {
+            update reply {
+                &User-Name !* ANY
+            }
+        }
+{% for pool_name, pool in configuration.pools.items()|reverse -%}
+{%- if loop.first %}
+        if (&reply:Class == 0x{{ pool.class }}) {
+            update control {
+                Pool-Name := "{{ pool_name }}_pool"
+            }
+            {{ pool_name }}_pool
+        }
+{%- elif loop.last %}
+        else {
+            update control {
+                Pool-Name := "{{ pool_name }}_pool"
+            }
+            {{ pool_name }}_pool
+        }
+{%- else %}
+        elsif (&reply:Class == 0x{{ pool.class }}) {
+            update control {
+                Pool-Name := "{{ pool_name }}_pool"
+            }
+            {{ pool_name }}_pool
+        }
+{%- endif -%}
+{% endfor %}
+
+        update {
+            &reply: += &session-state:
+        }
+
+        remove_reply_message_if_eap
+
+        Post-Auth-Type REJECT {
+            attr_filter.access_reject
+            eap
+            remove_reply_message_if_eap
+        }
+
+        Post-Auth-Type Challenge {
+        }
+    }
+
+    pre-proxy {
+    }
+
+    post-proxy {
+        eap
+    }
+}

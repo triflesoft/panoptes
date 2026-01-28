@@ -1,0 +1,30 @@
+auth-nocache
+auth-user-pass-verify /opt/openvpn/auth-user-pass-verify.sh via-file
+ca /etc/pki/CA/certs/vpn-ca.crt
+ccd-exclusive
+cert /etc/pki/tls/certs/vpn-server.crt
+client-config-dir /etc/openvpn/server/client-config
+dev tun
+dh none
+duplicate-cn
+errors-to-stderr
+ifconfig {{ configuration.network.virtual.ip_address }} {{ configuration.network.virtual.subnet_mask }}
+#ifconfig-pool {{ configuration.pools.base.ip_lower }} {{ configuration.pools.base.ip_upper }} {{ configuration.network.virtual.subnet_mask }}
+keepalive 10 60
+key /etc/pki/tls/private/vpn-server.key
+log-append /var/log/openvpn-server-udp.log
+machine-readable-output
+mode server
+opt-verify
+port 1194
+proto udp
+{% for pool_name, pool in configuration.pools.items() -%}
+push "route {{ pool.ip_network }} {{ pool.ip_netmask }} {{ configuration.network.virtual.ip_address }}"
+{% endfor -%}
+push "topology subnet"
+script-security 3
+tls-server
+topology subnet
+username-as-common-name
+verb 4
+verify-client-cert none

@@ -1,0 +1,19 @@
+# This file sets up non-interactive session.
+# Any output from this script breaks SFTP.
+# Use .bash_profile for interactive session output instead.
+
+if [[ -f /etc/bashrc ]]; then
+    . /etc/bashrc
+fi
+
+alias ls="LANG=C ls -l --human-readable --all --color=auto"
+alias nano="nano --smarthome --backup --constantshow --autoindent --linenumbers"
+alias su="su --login"
+
+export PATH=/usr/local/bin/:$PATH:~/.local/bin
+export EDITOR=nano
+export HISTCONTROL=ignoreboth
+export HISTIGNORE='clear:history*:rm*'
+
+ulimit -c 0
+umask 0027

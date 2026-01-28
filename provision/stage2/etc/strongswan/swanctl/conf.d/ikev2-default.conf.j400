@@ -1,0 +1,27 @@
+connections {
+    ike2_server_connection {
+        version = 2
+        proposals = "default,3des-aes128-aes192-aes256-sha1-sha256-sha384-modp1024,aes128gcm16-aes256gcm16-sha1-sha256-sha384-modp1024"
+        pools = radius
+
+        local {
+            auth = pubkey
+            certs = certbot-cert.pem
+            id = replica-vpn.eu.edge.xpanding.link
+        }
+
+        remote {
+            auth = eap-radius
+            eap_id = %any
+        }
+
+        children {
+            ike2_client_connection_xxxx {
+                esp_proposals = "default,aes256-aes128-3des-des-null-sha1"
+                local_ts = {{ configuration.network.virtual.ip_netmask }}
+            }
+        }
+
+        send_certreq = no
+    }
+}
